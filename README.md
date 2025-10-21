@@ -8,11 +8,27 @@
 
 要求实现一个 C++ 的大整数类，命名为 `int2048`。
 
-接口已在 `int2048.h` 中给出，你需要新建一个 `int2048.cpp` 文件，在其中实现给定的接口。
+项目的文件结构如下
+```
+├── CMakeLists.txt
+├── README.md
+├── data
+│   ├── Integer1
+│   └── Integer2
+└── src
+    ├── int2048.cpp
+    └── include/int2048.h
+```
+
+其中，本次大作业所有的源代码都在 `src` 文件夹下。
+
+`include/int2048.h` 文件给出了本次作业中 `int2048` 大整数类所需要实现的所有函数接口。
+
+你只需要在 `include/int2048.h` 文件中为 `int2048` 大整数类设计成员变量。
+
+考虑到在 C++ 的程序设计中，将类的成员函数接口与实现分离，是一个良好的设计习惯，所以，我们**建议**你在 `int2048.cpp` 文件中实现在 `include/int2048.h` 中声明的所有成员函数。
 
 当然，你也可以在**兼容当前所有接口**的基础之上，自己添加新的接口或修改原有接口（例如实现 `swap` 函数、右值构造函数）。
-
-相应的实现应该在 `int2048.cpp` 中完成，不要在 `int2048.h` 中实现。在 OJ 提交中，需要将 `int2048.cpp` 中的实现复制到 `int2048.h` 之中，再进行提交。
 
 #### 一些特殊要求
 
@@ -43,6 +59,44 @@ std::cout
 ```
 
 而对于取模操作 `x % y` ，其被定义为 `x % y = x - (x / y) * y` 。
+
+### 关于提交
+
+由于功能的限制，OJ 系统每次只能接受一个头文件。因此，在提交程序前你需要做如下的操作：
+
+假设你的 `include/int2048.h` 有如下结构
+```c++
+#pragma once
+#ifndef SJTU_BIGINTEGER
+#define SJTU_BIGINTEGER
+
+// your hpp source code
+
+#endif
+```
+
+以及你的 `include/int2048.cpp` 有如下结构
+```c++
+#include "int2048.h"
+
+// your cpp source code
+
+```
+
+那么在提交时，请新创建一个 `submit.h` 文件，结构如下：
+```c++
+#pragma once
+#ifndef SJTU_BIGINTEGER
+#define SJTU_BIGINTEGER
+
+// your hpp source code
+
+// your cpp source code
+
+#endif
+```
+
+并将其复制粘贴到 OJ 上提交即可。
 
 ### 评分标准
 
@@ -83,64 +137,7 @@ PS：BONUS 部分对代码性能也有要求，需要通过对应的测试数据
 
 对于 A 班同学，需要特别注意的是，你的 int2048 将会在之后的大作业 python 解释器中被使用。请务必保证你的代码有足够的健壮性，能够应对各种极端情况。
 
-### 关于实现
-项目的文件结构如下
-```
-├── CMakeLists.txt
-├── README.md
-├── data
-│   ├── Integer1
-│   └── Integer2
-└── src
-    ├── int2048.cpp
-    └── include/int2048.h
-```
 
-其中，本次大作业所有的源代码都在 `src` 文件夹下。
-
-`include/int2048.h` 文件给出了本次作业中 `int2048` 大整数类所需要实现的所有函数接口。
-
-你只需要在 `include/int2048.h` 文件中为 `int2048` 大整数类设计成员变量。
-
-考虑到在 C++ 的程序设计中，将类的成员函数接口与实现分离，是一个良好的设计习惯，所以，我们**建议**你在 `int2048.cpp` 文件中实现在 `include/int2048.h` 中声明的所有成员函数。
-
-### 关于提交
-
-由于功能的限制，OJ 系统每次只能接受一个头文件。因此，在提交程序前你需要做如下的操作：
-
-假设你的 `include/int2048.h` 有如下结构
-```c++
-#pragma once
-#ifndef SJTU_BIGINTEGER
-#define SJTU_BIGINTEGER
-
-// your hpp source code
-
-#endif
-```
-
-以及你的 `include/int2048.cpp` 有如下结构
-```c++
-#include "int2048.h"
-
-// your cpp source code
-
-```
-
-那么在提交时，请新创建一个 `submit.h` 文件，结构如下：
-```c++
-#pragma once
-#ifndef SJTU_BIGINTEGER
-#define SJTU_BIGINTEGER
-
-// your hpp source code
-
-// your cpp source code
-
-#endif
-```
-
-并将其复制粘贴到 OJ 上提交即可。
 
 ### 截止时间
 
