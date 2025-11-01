@@ -1,24 +1,37 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
+project(BigIntProject)
 
-project(int2048)
+# 设置C++标准
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-enable_testing()
-
+# 包含目录
 include_directories(src/include)
 
-set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
-file(GLOB_RECURSE SOURCES "${DATA_PATH}/**.cpp")
+# 创建int2048静态库
+add_library(int2048 STATIC src/int2048.cpp)
 
-foreach (SOURCE ${SOURCES})
-  string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/data/Integer" "" TESTCASE_NAME "${SOURCE}")
-  string(REPLACE "/" "_" TESTCASE_NAME "${TESTCASE_NAME}")
-  string(REPLACE ".cpp" ".in" INPUT ${SOURCE})
-  string(REPLACE ".cpp" ".out" OUTPUT ${SOURCE})
-  add_executable("${TESTCASE_NAME}" ${SOURCE} src/int2048.cpp)
-  if (EXISTS ${INPUT})
-    add_test(NAME ${TESTCASE_NAME} COMMAND bash -c "$<TARGET_FILE:${TESTCASE_NAME}> <${INPUT} | diff ${OUTPUT} -")
-  else ()
-    add_test(NAME ${TESTCASE_NAME} COMMAND bash -c "$<TARGET_FILE:${TESTCASE_NAME}> | diff ${OUTPUT} -")
-  endif()
-  set_property(TEST ${TESTCASE_NAME} PROPERTY TIMEOUT 10)
-endforeach()
+# 手动添加Integer1目录中的目标
+add_executable(Integer1_program1 data/Integer1/1.cpp)
+target_link_libraries(Integer1_program1 int2048)
+
+add_executable(Integer1_program2 data/Integer1/2.cpp) 
+target_link_libraries(Integer1_program2 int2048)
+
+# 手动添加Integer2目录中的目标
+add_executable(Integer2_program1 data/Integer2/1.cpp)
+target_link_libraries(Integer2_program1 int2048)
+
+add_executable(Integer2_program2 data/Integer2/2.cpp)
+target_link_libraries(Integer2_program2 int2048)
+
+# 设置输出目录
+set_target_properties(
+    Integer1_program1 Integer1_program2 
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/Integer1
+)
+
+set_target_properties(
+    Integer2_program1 Integer2_program2
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/Integer2
+)

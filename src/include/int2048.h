@@ -20,6 +20,10 @@
 namespace sjtu {
 class int2048 {
   // todo
+  std::vector<int> v;
+  bool negative;
+  const long long mod = 1e9;
+  const int mod_num = 9;
 public:
   // 构造函数
   int2048();
