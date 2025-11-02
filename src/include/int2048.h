@@ -41,7 +41,10 @@ public:
   void read(const std::string &);
   // 输出储存的大整数，无需换行
   void print();
-
+  void checkCarry(std::vector<int> &, int, int &);
+  void minusCheck(int2048 &, int2048 &);
+  void checkBorrow(std::vector<int> &, int, int &);
+  bool abscmp(std::vector<int> &, std::vector<int> &);
   // 加上一个大整数
   int2048 &add(const int2048 &);
   // 返回两个大整数之和

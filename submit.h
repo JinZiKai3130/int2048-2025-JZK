@@ -1,5 +1,91 @@
-#include "include/int2048.h"
+#pragma once
+#ifndef SJTU_BIGINTEGER
+#define SJTU_BIGINTEGER
 
+// your hpp source code
+#include <complex>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <vector>
+
+// 请不要使用 using namespace std;
+
+namespace sjtu {
+class int2048 {
+  // todo
+  std::vector<int> v;
+  bool negative;
+  const long long mod = 1e9;
+  const int mod_num = 9;
+public:
+  // 构造函数
+  int2048();
+  int2048(long long);
+  int2048(const std::string &);
+  int2048(const int2048 &);
+
+  // 以下给定函数的形式参数类型仅供参考，可自行选择使用常量引用或者不使用引用
+  // 如果需要，可以自行增加其他所需的函数
+  // ===================================
+  // Integer1
+  // ===================================
+
+  // 读入一个大整数
+  void read(const std::string &);
+  // 输出储存的大整数，无需换行
+  void print();
+  void checkCarry(std::vector<int> &, int, int &);
+  void minusCheck(int2048 &, int2048 &);
+  void checkBorrow(std::vector<int> &, int, int &);
+  bool abscmp(std::vector<int> &, std::vector<int> &);
+  // 加上一个大整数
+  int2048 &add(const int2048 &);
+  // 返回两个大整数之和
+  friend int2048 add(int2048, const int2048 &);
+
+  // 减去一个大整数
+  int2048 &minus(const int2048 &);
+  // 返回两个大整数之差
+  friend int2048 minus(int2048, const int2048 &);
+
+  // ===================================
+  // Integer2
+  // ===================================
+
+  int2048 operator+() const;
+  int2048 operator-() const;
+
+  int2048 &operator=(const int2048 &);
+
+  int2048 &operator+=(const int2048 &);
+  friend int2048 operator+(int2048, const int2048 &);
+
+  int2048 &operator-=(const int2048 &);
+  friend int2048 operator-(int2048, const int2048 &);
+
+  int2048 &operator*=(const int2048 &);
+  friend int2048 operator*(int2048, const int2048 &);
+
+  int2048 &operator/=(const int2048 &);
+  friend int2048 operator/(int2048, const int2048 &);
+
+  int2048 &operator%=(const int2048 &);
+  friend int2048 operator%(int2048, const int2048 &);
+
+  friend std::istream &operator>>(std::istream &, int2048 &);
+  friend std::ostream &operator<<(std::ostream &, const int2048 &);
+
+  friend bool operator==(const int2048 &, const int2048 &);
+  friend bool operator!=(const int2048 &, const int2048 &);
+  friend bool operator<(const int2048 &, const int2048 &);
+  friend bool operator>(const int2048 &, const int2048 &);
+  friend bool operator<=(const int2048 &, const int2048 &);
+  friend bool operator>=(const int2048 &, const int2048 &);
+};
+} // namespace sjtu
+
+// your cpp source code
 namespace sjtu {
 
 int2048::int2048() : negative(false) {
@@ -119,7 +205,6 @@ int2048 &int2048::add(const int2048 &other) {
     }
     int len1 = v.size(), len2 = other.v.size();
     int carry_over = 0;
-    // std::cout << "myfault" << std::endl;
     for (int i = 0 ; i < std::min(len1, len2); i++) {
         v[i] += other.v[i];
         checkCarry(v, i, carry_over);
@@ -147,7 +232,6 @@ int2048 add(int2048 add_1, const int2048 &add_2) {
 }
 
 bool int2048::abscmp(std::vector<int> &v1, std::vector<int> &v2) {
-    // std::cout << v1.size() << " size " << v2.size() << std::endl;
     if (v1.size() != v2.size()) {
         return v1.size() < v2.size();
     }
@@ -184,7 +268,6 @@ void int2048::minusCheck(int2048 &a1, int2048 &a2) {
             flag = false;
         }
     }
-    // std::cout << " xxx " << std::endl;
     if (flag) {
         int2048 tmp = a2;
         a2 = a1;
@@ -199,7 +282,6 @@ void int2048::checkBorrow(std::vector<int> &v, int i, int &borrow) {
         }
         borrow = ((v[i] + mod) / mod) ^ 1;
         v[i] = (v[i] + mod) % mod;
-        // std::cout << "todoborrow " << this->v.size() << std::endl;
 }
 
 int2048 &int2048::minus(const int2048 &other) {
@@ -209,16 +291,10 @@ int2048 &int2048::minus(const int2048 &other) {
         this->add(tmp);
         return *this;
     }
-    
     minusCheck(*this, tmp);
     // std::cout << v[0] << " " << tmp.v[0] << std::endl;
-    // std::cout << "todo " << this->v.size() << " " << tmp.v.size() << std::endl;
-    // this->print();
-    // std::cout << std::endl;
-    // tmp.print();
-    // std::cout << std::endl;
+    // std::cout << "todo " << this->v[0] << " " << tmp.v[0] << std::endl;
     int borrow = 0;
-    // std::cout << "todo " << this->v.size() << " " << tmp.v.size() << std::endl;
     for (int i = 0; i < v.size(); i++) {
         if (i < tmp.v.size()) {
             v[i] -= tmp.v[i];
@@ -226,7 +302,7 @@ int2048 &int2048::minus(const int2048 &other) {
         // std::cout << "Anothertodo " << this->v[0] << " " << tmp.v[0] << std::endl;
         checkBorrow(v, i, borrow);
     }
-    // std::cout << "anothertodo " << this->v[0] << std::endl;
+    // std::cout << "anothertodo " << this->v[0] << " " << tmp.v[0] << std::endl;
     if (v[v.size() - 1] == 0) v.pop_back();
     return *this;
 }
@@ -251,3 +327,5 @@ int2048 &int2048::operator=(const int2048 &other) {
 }
 
 } // namespace sjtu
+
+#endif

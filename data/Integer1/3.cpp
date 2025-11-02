@@ -20,6 +20,7 @@ int main()
         a.read(s1); b.read(s2);
         minus(a, b).print(); puts("");
         a.minus(b).print(); puts("");
+        // a.add(b).minus(a);
         (add(a, b)).minus(a.add(b).minus(a).add(b)).print(); puts("");
     }
 }
