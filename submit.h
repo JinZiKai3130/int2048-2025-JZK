@@ -90,7 +90,6 @@ namespace sjtu {
 
 int2048::int2048() : negative(false) {
     v.clear();
-    v.push_back(0);
 }
 
 int2048::int2048(long long a) : negative(false) {
@@ -111,25 +110,24 @@ int2048::int2048(long long a) : negative(false) {
 int2048::int2048(const std::string &s) : negative(false) {
     int len = s.size();
     // std::cerr << "len = " << len << '\n';
-    if (s[0] == '0') {
-        return;
-    }
     if (s[0] == '-') {
-        if(s[1] == '0') {
-            return;
-        }
         negative = true;
     }
     int tmp, cnt;
+    bool flag = false;
     for (int i = len - 1; i >= static_cast<int>(negative); i -= mod_num) {
         tmp = 0, cnt = 1;
         for (int j = i; j > std::max(i - mod_num, static_cast<int>(negative) - 1); j--) {
+            flag |= static_cast<int>(s[j] - '0');
             tmp += static_cast<int>(s[j] - '0') * cnt;
             cnt *= 10;
             // std::cerr << "tmp = " << tmp << std::endl;
         }
-        if (tmp != 0)
+        if (flag)
         v.push_back(tmp);
+    }
+    if (!flag) {
+        negative = false;
     }
 }
 
@@ -140,25 +138,24 @@ void int2048::read(const std::string &s) {
     v.clear();
     negative = false;
     int len = s.size();
-    if (s[0] == '0') {
-        return;
-    }
     if (s[0] == '-') {
-        if(s[1] == '0') {
-            return;
-        }
         negative = true;
     }
     int tmp, cnt;
+    bool flag = false;
     for (int i = len - 1; i >= static_cast<int>(negative); i -= mod_num) {
         tmp = 0, cnt = 1;
         for (int j = i; j > std::max(i - mod_num, static_cast<int>(negative) - 1); j--) {
+            flag |= static_cast<int>(s[j] - '0');
             tmp += static_cast<int>(s[j] - '0') * cnt;
             cnt *= 10;
             // std::cerr << "tmp = " << tmp << std::endl;
         }
-        if (tmp != 0)
+        if (flag)
         v.push_back(tmp);
+    }
+    if (!flag) {
+        negative = false;
     }
 }
 

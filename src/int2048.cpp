@@ -4,7 +4,6 @@ namespace sjtu {
 
 int2048::int2048() : negative(false) {
     v.clear();
-    v.push_back(0);
 }
 
 int2048::int2048(long long a) : negative(false) {
@@ -25,25 +24,24 @@ int2048::int2048(long long a) : negative(false) {
 int2048::int2048(const std::string &s) : negative(false) {
     int len = s.size();
     // std::cerr << "len = " << len << '\n';
-    if (s[0] == '0') {
-        return;
-    }
     if (s[0] == '-') {
-        if(s[1] == '0') {
-            return;
-        }
         negative = true;
     }
     int tmp, cnt;
+    bool flag = false;
     for (int i = len - 1; i >= static_cast<int>(negative); i -= mod_num) {
         tmp = 0, cnt = 1;
         for (int j = i; j > std::max(i - mod_num, static_cast<int>(negative) - 1); j--) {
+            flag |= static_cast<int>(s[j] - '0');
             tmp += static_cast<int>(s[j] - '0') * cnt;
             cnt *= 10;
             // std::cerr << "tmp = " << tmp << std::endl;
         }
-        if (tmp != 0)
+        if (flag)
         v.push_back(tmp);
+    }
+    if (!flag) {
+        negative = false;
     }
 }
 
@@ -54,25 +52,24 @@ void int2048::read(const std::string &s) {
     v.clear();
     negative = false;
     int len = s.size();
-    if (s[0] == '0') {
-        return;
-    }
     if (s[0] == '-') {
-        if(s[1] == '0') {
-            return;
-        }
         negative = true;
     }
     int tmp, cnt;
+    bool flag = false;
     for (int i = len - 1; i >= static_cast<int>(negative); i -= mod_num) {
         tmp = 0, cnt = 1;
         for (int j = i; j > std::max(i - mod_num, static_cast<int>(negative) - 1); j--) {
+            flag |= static_cast<int>(s[j] - '0');
             tmp += static_cast<int>(s[j] - '0') * cnt;
             cnt *= 10;
             // std::cerr << "tmp = " << tmp << std::endl;
         }
-        if (tmp != 0)
+        if (flag)
         v.push_back(tmp);
+    }
+    if (!flag) {
+        negative = false;
     }
 }
 
@@ -101,9 +98,10 @@ void int2048::print() {
     }
 }
 
-void int2048::checkCarry(std::vector<int> &v, int i, int &carry_over) {
+template <typename T>
+void int2048::checkCarry(std::vector<T> &v, int i, int &carry_over) {
         if (carry_over != 0) {
-            v[i] += 1;
+            v[i] += carry_over; // the change
         }
         carry_over = v[i] / mod;
         v[i] %= mod;
@@ -235,19 +233,154 @@ int2048 minus(int2048 to_be_subtracted, const int2048 &subtract) {
     return to_be_subtracted.minus(subtract);
 }
 
-// bool operator<(const int2048 &a1, const int2048 &a2) {
-    // if (a1.v.size() != a2.v.size()) {
-        // return a1.v.size() < a2.v.size();
-    // }
-    // else {
-        // return a1.v[a1.v.size() - 1] < a2.v[a2.v.size() - 1];
-    // }
-// }
+int2048 int2048::operator+() const {
+    return *this;
+}
+
+int2048 int2048::operator-() const {
+    int2048 tmp = *this;
+    if (!tmp.v.size()) return tmp;
+    else {
+        tmp.negative ^= 1;
+        return tmp;
+    }
+}
 
 int2048 &int2048::operator=(const int2048 &other) {
     v = other.v;
     negative = other.negative;
     return *this;
 }
+
+int2048 &int2048::operator+=(const int2048 &other) {
+    return this->add(other);
+}
+
+int2048 operator+(int2048 a1, const int2048 &a2) {
+    return a1.add(a2);
+}
+
+int2048 &int2048::operator-=(const int2048 &other) {
+    return this->minus(other);
+}
+
+int2048 operator-(int2048 a1, const int2048 &a2) {
+    return a1.minus(a2);
+}
+
+int2048 &int2048::operator*=(const int2048 &other) {
+    if (negative == other.negative) {
+        negative = false;
+    }
+    else {
+        negative = true;
+    }
+
+    if (!v.size() || !other.v.size()) {
+        v.clear();
+        negative = false;
+        return *this;
+    }
+    std::vector<long long> result;
+    for (int i = 0; i < v.size(); i++) {
+        for (int j = 0; j < other.v.size(); j++) {
+            if (i + j > result.size() - 1) {
+                result.push_back(static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]));
+            }
+            else {
+                result[i + j] += static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]);
+            }
+        }
+    }
+    int carry_over = 0;
+    for (int i = 0; i < result.size(); i++) {
+        checkCarry(result, i, carry_over);
+    }
+    if (!carry_over) {
+        result.push_back(carry_over);
+    }
+    v.clear();
+    for (int i = 0; i < result.size(); i++) {
+        this->v.push_back(result[i]);
+    }
+    return *this;
+}
+
+int2048 operator*(int2048 a1, const int2048 &a2) {
+    a1 *= a2;
+    return a1;
+}
+
+int2048 &int2048::operator/=(const int2048 &other) {
+    // 先找出除数的长度，在v中找到对应长度截出对应长度，再去剪掉除数的i倍，存储这一位答案，原数*10，再进行一次
+    int2048 tmp = *this;
+    std::string ans;
+    if (negative == other.negative) {
+        negative = false;
+    }
+    else {
+        negative = true;
+    }
+    int p1 = v.size() - 1, p2;
+    
+}
+
+int2048 operator/(int2048 a1, const int2048 &a2) {
+    a1 /= a2;
+    return a1;
+}
+
+bool operator==(const int2048 &a1, const int2048 &a2) {
+    if (a1.negative != a2.negative) return false;
+    if (a1.v.size() != a2.v.size()) return false;
+    for (int i = a1.v.size() - 1; i >= 0; i++) {
+        if (a1.v[i] != a2.v[i]) return false;
+    }
+    return true;
+}
+
+bool operator!=(const int2048 &a1, const int2048 &a2) {
+    return !(a1 == a2);
+}
+
+bool operator<(const int2048 &a1, const int2048 &a2) {
+    if (a1.negative && !a2.negative) return true;
+    if (!a1.negative && a2.negative) return false;
+    if (!a1.negative && !a2.negative) {
+        if (a1.v.size() != a2.v.size()) {
+            return a1.v.size() < a2.v.size();
+        }
+        else {
+            return a1.v[a1.v.size() - 1] < a2.v[a2.v.size() - 1];
+        }
+        return false;
+    }
+    if (a1.negative && a2.negative) {
+        if (a1.v.size() != a2.v.size()) {
+            return a1.v.size() > a2.v.size();
+        }
+        else {
+            return a1.v[a1.v.size() - 1] > a2.v[a2.v.size() - 1];
+        }
+        return false;
+    }
+    return false;
+}
+
+bool operator<=(const int2048 &a1, const int2048 &a2) {
+    return (a1 < a2) | (a1 == a2);
+}
+
+bool operator>=(const int2048 &a1, const int2048 &a2) {
+    return !(a1 < a2);
+}
+
+bool operator>(const int2048 &a1, const int2048 &a2) {
+    return !(a1 <= a2);
+}
+
+
+
+
 
 } // namespace sjtu
