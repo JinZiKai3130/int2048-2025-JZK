@@ -33,6 +33,11 @@ public:
 
   // 以下给定函数的形式参数类型仅供参考，可自行选择使用常量引用或者不使用引用
   // 如果需要，可以自行增加其他所需的函数
+  template <typename T>
+  void checkCarry(std::vector<T> &, int, T &);
+  void minusCheck(int2048 &, int2048 &);
+  void checkBorrow(std::vector<int> &, int, int &);
+  bool abscmp(std::vector<int> &, std::vector<int> &);
   // ===================================
   // Integer1
   // ===================================
@@ -41,11 +46,6 @@ public:
   void read(const std::string &);
   // 输出储存的大整数，无需换行
   void print();
-  template <typename T>
-  void checkCarry(std::vector<T> &, int, int &);
-  void minusCheck(int2048 &, int2048 &);
-  void checkBorrow(std::vector<int> &, int, int &);
-  bool abscmp(std::vector<int> &, std::vector<int> &);
   // 加上一个大整数
   int2048 &add(const int2048 &);
   // 返回两个大整数之和

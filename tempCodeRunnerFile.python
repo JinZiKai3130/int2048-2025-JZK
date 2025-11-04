@@ -1,0 +1,11 @@
+a = 173498401011288
+b = -426824337079922
+a = a*b
+print a
+a = a*b
+print a
+a = a*a
+print a
+a = a*b
+b = b*a
+print b

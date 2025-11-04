@@ -88,7 +88,7 @@ void int2048::print() {
     for (int i = v.size() - 1; i >= 0; i--) {
         if (i != v.size() - 1) {
             long long tmp = mod / 10;
-            while(true) {
+            while(true) { // the zeros before number
                 if (v[i] / tmp == 0) std::cout << 0;
                 else break;
                 tmp /= 10;
@@ -99,12 +99,18 @@ void int2048::print() {
 }
 
 template <typename T>
-void int2048::checkCarry(std::vector<T> &v, int i, int &carry_over) {
-        if (carry_over != 0) {
-            v[i] += carry_over; // the change
-        }
-        carry_over = v[i] / mod;
-        v[i] %= mod;
+void int2048::checkCarry(std::vector<T> &vt, int i, T &carry_over) {
+    unsigned long long tmp;
+    tmp = vt[i] + carry_over; // the change
+    carry_over = tmp / mod;
+    vt[i] = tmp % mod;
+    /*
+    T tmp = vt[i] / mod;
+    vt[i] %= mod;
+    vt[i] += carry_over;
+    tmp += vt[i] / mod;
+    carry_over = tmp;
+    */
 }
 
 int2048 &int2048::add(const int2048 &other) {
@@ -284,7 +290,8 @@ int2048 &int2048::operator*=(const int2048 &other) {
     std::vector<long long> result;
     for (int i = 0; i < v.size(); i++) {
         for (int j = 0; j < other.v.size(); j++) {
-            if (i + j > result.size() - 1) {
+            // std::cout << v[i] << " " << other.v[j] << " " << std::endl;
+            if (i + j >= result.size()) {
                 result.push_back(static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]));
             }
             else {
@@ -292,14 +299,24 @@ int2048 &int2048::operator*=(const int2048 &other) {
             }
         }
     }
-    int carry_over = 0;
+    // std::cout << "I'm here" << std::endl;
+    long long carry_over = 0;
+    int cnt = 1;
     for (int i = 0; i < result.size(); i++) {
+        // std::cout << "i = " << i << " check_carry = " << carry_over << '\n';
         checkCarry(result, i, carry_over);
     }
-    if (!carry_over) {
+    // std::cout << "carry_over = " << carry_over << std::endl; 
+    if (carry_over) {
         result.push_back(carry_over);
     }
     v.clear();
+    for (int i = result.size() - 1; i >= 0; i--) {
+        if (result[i] == 0) result.pop_back();
+        else {
+            break;
+        }
+    }
     for (int i = 0; i < result.size(); i++) {
         this->v.push_back(result[i]);
     }
@@ -311,18 +328,41 @@ int2048 operator*(int2048 a1, const int2048 &a2) {
     return a1;
 }
 
-int2048 &int2048::operator/=(const int2048 &other) {
+int2048 &int2048::operator/=(const int2048 &otherconst) {
     // 先找出除数的长度，在v中找到对应长度截出对应长度，再去剪掉除数的i倍，存储这一位答案，原数*10，再进行一次
-    int2048 tmp = *this;
-    std::string ans;
-    if (negative == other.negative) {
-        negative = false;
+    int2048 ans;
+    if (negative == otherconst.negative) {
+        ans.negative = false;
     }
     else {
-        negative = true;
+        ans.negative = true;
     }
-    int p1 = v.size() - 1, p2;
-    
+    int2048 tmp, other = otherconst;
+    tmp.v.clear();
+    tmp.negative = false;
+    other.negative = false;
+    bool flag = false;
+    for (int i = v.size() - 1; i >= 0; i--) {
+        int cnt = 0;
+        tmp.v.insert(tmp.v.begin(), v[i]);
+        if (tmp < other) {
+            if (flag) {
+                ans.v.insert(ans.v.begin(), 0);
+            }
+            else continue;
+        }
+
+        while (tmp >= other) {
+            tmp -= other;
+            cnt++;
+        }
+        if (cnt > 0) {
+            ans.v.insert(ans.v.begin(), cnt);
+            flag = true;
+        }
+    }
+    *this = ans;
+    return *this;
 }
 
 int2048 operator/(int2048 a1, const int2048 &a2) {
@@ -379,8 +419,22 @@ bool operator>(const int2048 &a1, const int2048 &a2) {
     return !(a1 <= a2);
 }
 
+std::istream &operator>>(std::istream &is, int2048 &input) {
+    std::string s;
+    is >> s;
+    input.read(s);
+    return is;
+}
 
+std::ostream &operator<<(std::ostream &os, const int2048 &ans) {
+    int2048 tmp = ans;
 
+    std::streambuf* original_cout_buf = std::cout.rdbuf();
+    std::cout.rdbuf(os.rdbuf());
+    tmp.print();
+    std::cout.rdbuf(original_cout_buf);
 
+    return os;
+}
 
 } // namespace sjtu

@@ -16,11 +16,17 @@ int main()
     while (T--)
     {
         std::cin >> a >> b;
+        // std::cout << "cin ok" << std::endl;
         std::cout << a * b << '\n';
+        // std::cout << "cout ok1" << std::endl;
         std::cout << (a *= b) << '\n';
+        // std::cout << "cout ok2" << std::endl;
         a *= b;
+        // std::cout << "a = " << a << '\n';
         a *= a;
+        // std::cout << "a = " << a << '\n';
         a *= b;
+        // std::cout << "a = " << a << '\n';
         std::cout << (b *= a) << '\n';
     }
 }

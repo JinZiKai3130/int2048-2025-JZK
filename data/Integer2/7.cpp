@@ -18,6 +18,7 @@ int main()
     v.push_back(v[0] - 1);
     v.push_back(v[0] * 10);
     v.push_back(v[0] / 10);
+    std::cout << "end here" << std::endl;
     v.push_back(v[0] * 10000000000000000ll);
     v.push_back(v[0] / 10000000000000000ll);
     v.push_back(v[0] * 114514);

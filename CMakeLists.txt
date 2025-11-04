@@ -5,11 +5,6 @@ project(Int2048Project)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 设置编译器警告
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-endif()
-
 # 包含头文件目录
 include_directories(src/include)
 
@@ -19,42 +14,65 @@ add_library(int2048 STATIC src/int2048.cpp)
 # 设置输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# 首先检查目录结构
-message(STATUS "当前源目录: ${CMAKE_SOURCE_DIR}")
-message(STATUS "检查 data/Integer1 目录...")
+# 打印调试信息
+message(STATUS "项目根目录: ${CMAKE_SOURCE_DIR}")
+message(STATUS "正在搜索 Integer1 和 Integer2 目录...")
 
-# 使用更可靠的方法查找文件
-file(GLOB INTEGER1_FILES "data/Integer1/*.cpp")
-file(GLOB INTEGER2_FILES "data/Integer2/*.cpp")
+# 使用更可靠的文件搜索方法
+file(GLOB INTEGER1_FILES RELATIVE ${CMAKE_SOURCE_DIR} "data/Integer1/*.cpp")
+file(GLOB INTEGER2_FILES RELATIVE ${CMAKE_SOURCE_DIR} "data/Integer2/*.cpp")
 
-message(STATUS "找到的 Integer1 文件: ${INTEGER1_FILES}")
-message(STATUS "找到的 Integer2 文件: ${INTEGER2_FILES}")
+# 打印找到的文件
+message(STATUS "找到的 Integer1 文件:")
+foreach(file ${INTEGER1_FILES})
+    message(STATUS "  - ${file}")
+endforeach()
 
-# 编译找到的所有 Integer1 文件
+message(STATUS "找到的 Integer2 文件:")
+foreach(file ${INTEGER2_FILES})
+    message(STATUS "  - ${file}")
+endforeach()
+
+# 编译 Integer1 文件
 foreach(source_file ${INTEGER1_FILES})
     get_filename_component(file_name ${source_file} NAME_WE)
     set(target_name "Integer1_${file_name}")
+    
+    message(STATUS "添加目标: ${target_name} <- ${source_file}")
     add_executable(${target_name} ${source_file})
     target_link_libraries(${target_name} int2048)
-    message(STATUS "添加目标: ${target_name} <- ${source_file}")
+    
+    # 设置输出到对应子目录
+    set_target_properties(${target_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Integer1"
+    )
 endforeach()
 
-# 编译找到的所有 Integer2 文件
+# 编译 Integer2 文件
 foreach(source_file ${INTEGER2_FILES})
     get_filename_component(file_name ${source_file} NAME_WE)
     set(target_name "Integer2_${file_name}")
+    
+    message(STATUS "添加目标: ${target_name} <- ${source_file}")
     add_executable(${target_name} ${source_file})
     target_link_libraries(${target_name} int2048)
-    message(STATUS "添加目标: ${target_name} <- ${source_file}")
+    
+    # 设置输出到对应子目录
+    set_target_properties(${target_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Integer2"
+    )
 endforeach()
 
-# 创建快捷目标
-add_custom_target(all_programs)
+# 创建目录（确保输出目录存在）
+file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Integer1")
+file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Integer2")
 
-# 显示总结信息
+# 创建聚合目标
+add_custom_target(all_integer1 DEPENDS ${INTEGER1_TARGETS})
+add_custom_target(all_integer2 DEPENDS ${INTEGER2_TARGETS})
+add_custom_target(all_programs DEPENDS all_integer1 all_integer2)
+
 message(STATUS "")
-message(STATUS "=== 项目配置总结 ===")
-message(STATUS "Integer1 程序数量: ${INTEGER1_FILES_COUNT}")
-message(STATUS "Integer2 程序数量: ${INTEGER2_FILES_COUNT}")
-message(STATUS "输出目录: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-message(STATUS "====================")
+message(STATUS "=== 配置完成 ===")
+message(STATUS "Integer1 目标数: ${INTEGER1_COUNT}")
+message(STATUS "Integer2 目标数: ${INTEGER2_COUNT}")
