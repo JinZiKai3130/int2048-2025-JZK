@@ -115,19 +115,22 @@ int2048::int2048(const std::string &s) : negative(false) {
         negative = true;
     }
     int tmp, cnt;
-    bool flag = false;
     for (int i = len - 1; i >= static_cast<int>(negative); i -= mod_num) {
         tmp = 0, cnt = 1;
         for (int j = i; j > std::max(i - mod_num, static_cast<int>(negative) - 1); j--) {
-            flag |= static_cast<int>(s[j] - '0');
             tmp += static_cast<int>(s[j] - '0') * cnt;
             cnt *= 10;
             // std::cerr << "tmp = " << tmp << std::endl;
         }
-        if (flag)
         v.push_back(tmp);
     }
-    if (!flag) {
+    while (!v.empty()) {
+        if (v[v.size() - 1] == 0) {
+            v.pop_back();
+        }
+        else break;
+    }
+    if (v.empty()) {
         negative = false;
     }
 }
@@ -143,25 +146,28 @@ void int2048::read(const std::string &s) {
         negative = true;
     }
     int tmp, cnt;
-    bool flag = false;
     for (int i = len - 1; i >= static_cast<int>(negative); i -= mod_num) {
         tmp = 0, cnt = 1;
         for (int j = i; j > std::max(i - mod_num, static_cast<int>(negative) - 1); j--) {
-            flag |= static_cast<int>(s[j] - '0');
             tmp += static_cast<int>(s[j] - '0') * cnt;
             cnt *= 10;
             // std::cerr << "tmp = " << tmp << std::endl;
         }
-        if (flag)
         v.push_back(tmp);
     }
-    if (!flag) {
+    while (!v.empty()) {
+        if (v[v.size() - 1] == 0) {
+            v.pop_back();
+        }
+        else break;
+    }
+    if (v.empty()) {
         negative = false;
     }
 }
 
 void int2048::print() {
-    if (!v.size()) {
+    if (v.empty()) {
         std::cout << 0;
         return;
     }
@@ -175,12 +181,13 @@ void int2048::print() {
     for (int i = v.size() - 1; i >= 0; i--) {
         if (i != v.size() - 1) {
             long long tmp = mod / 10;
-            while(true) {
+            while(tmp != 0) { // the zeros before number
                 if (v[i] / tmp == 0) std::cout << 0;
                 else break;
                 tmp /= 10;
             }
         }
+        if (v[i])
         std::cout << v[i];
     }
 }
@@ -297,6 +304,7 @@ int2048 &int2048::minus(const int2048 &other) {
     int2048 tmp = other;
     if (negative != other.negative) {
         tmp.negative = negative;
+        
         this->add(tmp);
         return *this;
     }
@@ -318,7 +326,10 @@ int2048 &int2048::minus(const int2048 &other) {
         checkBorrow(v, i, borrow);
     }
     // std::cout << "anothertodo " << this->v[0] << std::endl;
-    if (v[v.size() - 1] == 0) v.pop_back();
+    // if (v[v.size() - 1] == 0) v.pop_back();
+    while (!v.empty() && v[v.size() - 1] == 0) {
+        v.pop_back();
+    }
     return *this;
 }
 
@@ -362,40 +373,50 @@ int2048 operator-(int2048 a1, const int2048 &a2) {
 }
 
 int2048 &int2048::operator*=(const int2048 &other) {
-    if (negative == other.negative) {
+    if (negative == other.negative) { // judge the sign
         negative = false;
     }
     else {
         negative = true;
     }
 
-    if (!v.size() || !other.v.size()) {
+    if (!v.size() || !other.v.size()) { // judge whether it's zero
         v.clear();
         negative = false;
         return *this;
     }
-    std::vector<long long> result;
+    std::vector<__int128> result(v.size() + other.v.size(), 0);
+    // std::vector<long long> anotherresult(v.size() + other.v.size(), 0);
+    // multiply first
     for (int i = 0; i < v.size(); i++) {
         for (int j = 0; j < other.v.size(); j++) {
-            if (i + j >= result.size()) {
-                result.push_back(static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]));
-            }
-            else {
-                result[i + j] += static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]);
-            }
+            // std::cout << v[i] << " " << other.v[j] << " " << std::endl;
+            result[i + j] += static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]);
         }
     }
+    // do carry
     long long carry_over = 0;
     for (int i = 0; i < result.size(); i++) {
-        checkCarry(result, i, carry_over);
+        // std::cout << "i = " << i << " check_carry = " << carry_over << '\n';
+        __int128 tmp;
+        tmp = result[i] + static_cast<__int128>(carry_over); // the change
+        carry_over = tmp / static_cast<__int128>(mod);
+        result[i] = tmp % static_cast<__int128>(mod);
     }
+    // std::cout << "carry_over = " << carry_over << std::endl;
+    // check the last carry
     if (carry_over) {
         result.push_back(carry_over);
     }
     v.clear();
-    for (int i = 0; i < result.size(); i++) {
-        this->v.push_back(result[i]);
+    // pop zero 
+    while (result.size() >= 1 && result.back() == 0) {
+        result.pop_back();
     }
+    for (int i = 0; i < result.size(); i++) {
+        v.push_back(static_cast<int>(result[i]));
+    }
+    // std::cout << "I'm here" << std::endl;
     return *this;
 }
 
@@ -413,29 +434,63 @@ int2048 &int2048::operator/=(const int2048 &otherconst) {
     else {
         ans.negative = true;
     }
+    if (v.empty()) {
+        negative = false;
+        return *this;
+    }
     int2048 tmp, other = otherconst;
     tmp.v.clear();
     tmp.negative = false;
     other.negative = false;
     bool flag = false;
     for (int i = v.size() - 1; i >= 0; i--) {
-        int cnt = 0;
-        tmp.v.insert(tmp.v.begin(), v[i]);
-        if (tmp < other) {
+        tmp.v.insert(tmp.v.begin(), v[i]); // 每次往里面放入下一个
+        while (tmp.v.size() >= 1 && tmp.v.back() == 0) {
+            tmp.v.pop_back();
+        }
+        if (tmp < other) { // 如果当前被除数不够大
             if (flag) {
                 ans.v.insert(ans.v.begin(), 0);
+                continue;
             }
             else continue;
         }
-
-        while (tmp >= other) {
-            tmp -= other;
-            cnt++;
+        // std::cout << "tmp = " << tmp << std::endl;
+        int l = 1, r = 1e9;
+        long long mid;
+        flag = true;
+        int2048 t;
+        while (l < r) {
+            mid = l + (r - l + 1) / 2;
+            // std::cout << "mid = " << mid << " l = " << l << " r = " << r << std::endl;
+            t = int2048(mid);
+            // std::cout << "t * other = " << t * other << " tmp = " << tmp << std::endl;
+            if (t * other <= tmp) {
+                l = mid;
+            }
+            else {
+                // std::cout << "xxx" << std::endl;
+                r = mid - 1;
+            }
         }
-        if (cnt > 0) {
-            ans.v.insert(ans.v.begin(), cnt);
-            flag = true;
+        // std::cout << "outsidemid = " << mid << " l = " << l << " r = " << r << std::endl;
+        ans.v.insert(ans.v.begin(), l);
+        t = int2048(l) * other;
+        // std::cout << "intmp.empty() = " << tmp.v.empty() << " tmp.size() = " << tmp.v.size() << std::endl;
+        tmp -= t;
+        // std::cout << "intmp.empty() = " << tmp.v.empty() << " tmp.size() = " << tmp.v.size() << std::endl;
+        while (tmp.v.size() >= 1 && tmp.v.back() == 0) {
+            tmp.v.pop_back();
         }
+    }
+    // std::cout << "out tmp = " << tmp << std::endl;
+    while (tmp.v.size() >= 1 && tmp.v.back() == 0) {
+        tmp.v.pop_back();
+    }
+    // std::cout << "tmp.empty() = " << tmp.v.empty() << std::endl;
+    // std::cout << "tmp0 = " << tmp.v[0] << std::endl;
+    if (ans.negative && !tmp.v.empty()) {
+        ans -= 1;
     }
     *this = ans;
     return *this;
@@ -446,11 +501,24 @@ int2048 operator/(int2048 a1, const int2048 &a2) {
     return a1;
 }
 
+int2048 &int2048::operator%=(const int2048 &otherconst) {
+    int2048 ans = (*this - (*this / otherconst) * otherconst);
+    *this = ans;
+    return *this;
+}
+
+int2048 operator%(int2048 a1, const int2048 &a2) {
+    a1 %= a2;
+    return a1;
+}
+
 bool operator==(const int2048 &a1, const int2048 &a2) {
-    if (a1.negative != a2.negative) return false;
-    if (a1.v.size() != a2.v.size()) return false;
-    for (int i = a1.v.size() - 1; i >= 0; i++) {
-        if (a1.v[i] != a2.v[i]) return false;
+    if (a1.negative != a2.negative) { return false; }
+    if (a1.v.size() != a2.v.size()) { return false; }
+    for (int i = a1.v.size() - 1; i >= 0; i--) {
+        if (a1.v[i] != a2.v[i]) {
+            return false;
+        }
     }
     return true;
 }
@@ -467,7 +535,11 @@ bool operator<(const int2048 &a1, const int2048 &a2) {
             return a1.v.size() < a2.v.size();
         }
         else {
-            return a1.v[a1.v.size() - 1] < a2.v[a2.v.size() - 1];
+            for (int i = a1.v.size() - 1; i >= 0; i--) {
+                if (a1.v[i] != a2.v[i]) {
+                return a1.v[i] < a2.v[i];
+                }
+            }
         }
         return false;
     }
@@ -476,7 +548,11 @@ bool operator<(const int2048 &a1, const int2048 &a2) {
             return a1.v.size() > a2.v.size();
         }
         else {
-            return a1.v[a1.v.size() - 1] > a2.v[a2.v.size() - 1];
+            for (int i = a1.v.size() - 1; i >= 0; i--) {
+                if (a1.v[i] != a2.v[i]) {
+                return a1.v[i] > a2.v[i];
+                }
+            }
         }
         return false;
     }
@@ -504,7 +580,7 @@ std::istream &operator>>(std::istream &is, int2048 &input) {
 
 std::ostream &operator<<(std::ostream &os, const int2048 &ans) {
     int2048 tmp = ans;
-    
+
     std::streambuf* original_cout_buf = std::cout.rdbuf();
     std::cout.rdbuf(os.rdbuf());
     tmp.print();
@@ -514,6 +590,5 @@ std::ostream &operator<<(std::ostream &os, const int2048 &ans) {
 }
 
 } // namespace sjtu
-
 
 #endif

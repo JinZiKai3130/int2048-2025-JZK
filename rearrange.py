@@ -1,6 +1,6 @@
 import sys
 
-def main():
+def rearrange_data():
     # 读取所有输入数据
     data = list(map(int, sys.stdin.read().split()))
     
@@ -12,11 +12,15 @@ def main():
     dividends = data[:1000]
     divisors = data[1000:2000]
     
-    # 计算整数除法（向下取整）
+    # 重新排列：被除数1, 除数1, 被除数2, 除数2, ...
+    rearranged = []
     for i in range(1000):
-        # 使用整数除法，结果向下取整
-        result = dividends[i] // divisors[i]
-        print(result)
+        rearranged.append(dividends[i])
+        rearranged.append(divisors[i])
+    
+    # 输出重排后的数据
+    for num in rearranged:
+        print(num)
 
 if __name__ == "__main__":
-    main()
+    rearrange_data()

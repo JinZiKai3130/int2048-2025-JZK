@@ -19,14 +19,14 @@ int main()
         // std::cout << "cin ok" << std::endl;
         std::cout << a * b << '\n';
         // std::cout << "cout ok1" << std::endl;
-        std::cout << (a *= b) << '\n';
+        // std::cout << (a *= b) << '\n';
         // std::cout << "cout ok2" << std::endl;
-        a *= b;
+        // a *= b;
         // std::cout << "a = " << a << '\n';
-        a *= a;
+        // a *= a;
         // std::cout << "a = " << a << '\n';
-        a *= b;
+        // a *= b;
         // std::cout << "a = " << a << '\n';
-        std::cout << (b *= a) << '\n';
+        // std::cout << (b *= a) << '\n';
     }
 }
