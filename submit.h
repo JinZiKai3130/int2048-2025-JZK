@@ -318,7 +318,7 @@ int2048 &int2048::minus(const int2048 &other) {
     // std::cout << std::endl;
     int borrow = 0;
     // std::cout << "todo " << this->v.size() << " " << tmp.v.size() << std::endl;
-    for (int i = 0; i < v.size(); i++) {
+    for (int i = 0; i < v.size(); ++i) {
         if (i < tmp.v.size()) {
             v[i] -= tmp.v[i];
         }
@@ -388,15 +388,15 @@ int2048 &int2048::operator*=(const int2048 &other) {
     std::vector<__int128> result(v.size() + other.v.size(), 0);
     // std::vector<long long> anotherresult(v.size() + other.v.size(), 0);
     // multiply first
-    for (int i = 0; i < v.size(); i++) {
-        for (int j = 0; j < other.v.size(); j++) {
+    for (int i = 0; i < v.size(); ++i) {
+        for (int j = 0; j < other.v.size(); ++j) {
             // std::cout << v[i] << " " << other.v[j] << " " << std::endl;
             result[i + j] += static_cast<long long>(v[i]) * static_cast<long long>(other.v[j]);
         }
     }
     // do carry
     long long carry_over = 0;
-    for (int i = 0; i < result.size(); i++) {
+    for (int i = 0; i < result.size(); ++i) {
         // std::cout << "i = " << i << " check_carry = " << carry_over << '\n';
         __int128 tmp;
         tmp = result[i] + static_cast<__int128>(carry_over); // the change
@@ -413,7 +413,7 @@ int2048 &int2048::operator*=(const int2048 &other) {
     while (result.size() >= 1 && result.back() == 0) {
         result.pop_back();
     }
-    for (int i = 0; i < result.size(); i++) {
+    for (int i = 0; i < result.size(); ++i) {
         v.push_back(static_cast<int>(result[i]));
     }
     // std::cout << "I'm here" << std::endl;
@@ -425,74 +425,70 @@ int2048 operator*(int2048 a1, const int2048 &a2) {
     return a1;
 }
 
-int2048 &int2048::operator/=(const int2048 &otherconst) {
+int2048 &int2048::operator/=(const int2048 &other) {
     // 先找出除数的长度，在v中找到对应长度截出对应长度，再去剪掉除数的i倍，存储这一位答案，原数*10，再进行一次
     int2048 ans;
-    if (negative == otherconst.negative) {
-        ans.negative = false;
+    if (negative == other.negative) {
+        negative = false;
     }
     else {
-        ans.negative = true;
+        negative = true;
     }
-    if (v.empty()) {
+    if (v.empty()) { // 特判0
         negative = false;
         return *this;
     }
-    int2048 tmp, other = otherconst;
-    tmp.v.clear();
+    int2048 tmp;
     tmp.negative = false;
-    other.negative = false;
     bool flag = false;
-    for (int i = v.size() - 1; i >= 0; i--) {
-        tmp.v.insert(tmp.v.begin(), v[i]); // 每次往里面放入下一个
-        while (tmp.v.size() >= 1 && tmp.v.back() == 0) {
+    for (int i = v.size() - 1; i >= 0; --i) {
+        tmp *= mod; tmp += v[i]; // 每次往里面放入下一个
+        while (tmp.v.size() >= 1 && tmp.v.back() == 0) { // 清空前导0
             tmp.v.pop_back();
         }
         if (tmp < other) { // 如果当前被除数不够大
             if (flag) {
-                ans.v.insert(ans.v.begin(), 0);
+                ans.v.push_back(0);
                 continue;
             }
             else continue;
         }
-        // std::cout << "tmp = " << tmp << std::endl;
-        int l = 1, r = 1e9;
-        long long mid;
         flag = true;
+        long long l = 1, r = 1e9;
+        long long mid;
         int2048 t;
         while (l < r) {
             mid = l + (r - l + 1) / 2;
-            // std::cout << "mid = " << mid << " l = " << l << " r = " << r << std::endl;
-            t = int2048(mid);
-            // std::cout << "t * other = " << t * other << " tmp = " << tmp << std::endl;
-            if (t * other <= tmp) {
+            t = mid * other;
+            t.negative = false;
+            if (t <= tmp) {
                 l = mid;
             }
             else {
-                // std::cout << "xxx" << std::endl;
                 r = mid - 1;
             }
         }
-        // std::cout << "outsidemid = " << mid << " l = " << l << " r = " << r << std::endl;
-        ans.v.insert(ans.v.begin(), l);
+        ans.v.push_back(l);
+
         t = int2048(l) * other;
-        // std::cout << "intmp.empty() = " << tmp.v.empty() << " tmp.size() = " << tmp.v.size() << std::endl;
+        t.negative = false;
         tmp -= t;
-        // std::cout << "intmp.empty() = " << tmp.v.empty() << " tmp.size() = " << tmp.v.size() << std::endl;
-        while (tmp.v.size() >= 1 && tmp.v.back() == 0) {
+        
+        while (tmp.v.size() >= 1 && tmp.v.back() == 0) { // 清空前导0
             tmp.v.pop_back();
         }
     }
-    // std::cout << "out tmp = " << tmp << std::endl;
-    while (tmp.v.size() >= 1 && tmp.v.back() == 0) {
+    
+    while (tmp.v.size() >= 1 && tmp.v.back() == 0) { // 清空前导0
         tmp.v.pop_back();
     }
-    // std::cout << "tmp.empty() = " << tmp.v.empty() << std::endl;
-    // std::cout << "tmp0 = " << tmp.v[0] << std::endl;
-    if (ans.negative && !tmp.v.empty()) {
-        ans -= 1;
+    v.clear();
+    for (int i = ans.v.size() - 1; i >= 0; --i) { // 重新赋值
+        v.push_back(ans.v[i]);
     }
-    *this = ans;
+    if (negative && !tmp.v.empty()) { // 负数判断
+        *this -= 1;
+    }
     return *this;
 }
 

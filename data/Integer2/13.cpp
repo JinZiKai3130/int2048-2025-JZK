@@ -23,7 +23,7 @@ int main()
         }
 
         a = s1, b = s2;
-        std::cout << a << '\n' << b << '\n';
-        std::cout << a / b << '\n';
+        // std::cout << a << '\n' << b << '\n';
+        std::cout << a * b << '\n';
     }
 }
